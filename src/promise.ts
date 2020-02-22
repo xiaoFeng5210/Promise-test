@@ -1,15 +1,25 @@
 class Promise2 {
   succeed = null;
   fail = null;
+  state = "pending";
+  callbacks = [];
 
-  resolve = () => {
+  resolve = result => {
+    if (this.state !== "pending") return;
+    this.state = "fulfilled";
     setTimeout(() => {
-      this.succeed();
+      if (typeof this.succeed === "function") {
+        this.succeed.call(undefined, result);
+      }
     }, 0);
   };
-  reject = () => {
+  reject = reason => {
+    if (this.state !== "pending") return;
+    this.state = "rejected";
     setTimeout(() => {
-      this.fail();
+      if (typeof this.succeed === "function") {
+        this.fail.call(undefined, reason);
+      }
     }, 0);
   };
 
@@ -21,8 +31,12 @@ class Promise2 {
     fn(this.resolve, this.reject);
   }
   then(succeed, fail) {
-    this.succeed = succeed;
-    this.fail = fail;
+    if (typeof succeed === "function") {
+      this.succeed = succeed;
+    }
+    if (typeof succeed === "function") {
+      this.fail = fail;
+    }
   }
 }
 

@@ -47,20 +47,35 @@ describe("Promise", () => {
 
   it("promise.then(success)中success会在resolve被调用时执行", done => {
     let called = false;
+    const success = sinon.fake();
     const promise = new Promise((resolve, reject) => {
-      // 该函数没有执行
-      assert(called === false);
+      assert.isFalse(success.called);
       resolve();
       setTimeout(() => {
-        assert(called === true);
+        assert.isTrue(success.called);
         done();
       });
-
-      // 该函数执行
     });
     // @ts-ignore
-    promise.then(() => {
-      called = true;
+    promise.then(success);
+  });
+
+  it("2.2.1", () => {
+    const promise = new Promise(resolve => {
+      resolve();
+    });
+    promise.then(false, null);
+    assert(1 === 1);
+  });
+
+  it("2.2.2", done => {
+    const succeed = sinon.fake();
+    const promise = new Promise(resolve => {
+      assert.isFalse(succeed.called);
+      resolve();
+      setTimeout(() => {
+        assert.isTrue(succeed.called);
+      }, 0);
     });
   });
 });
