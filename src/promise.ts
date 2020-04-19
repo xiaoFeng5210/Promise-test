@@ -4,22 +4,26 @@ class Promise2 {
   state = "pending";
   callbacks = [];
 
-  resolve = result => {
+  resolve = (result) => {
     if (this.state !== "pending") return;
     this.state = "fulfilled";
     setTimeout(() => {
-      if (typeof this.succeed === "function") {
-        this.succeed.call(undefined, result);
-      }
+      this.callbacks.forEach((handle) => {
+        if (typeof this.succeed === "function") {
+          handle[0].call(undefined, result);
+        }
+      });
     }, 0);
   };
-  reject = reason => {
+  reject = (reason) => {
     if (this.state !== "pending") return;
     this.state = "rejected";
     setTimeout(() => {
-      if (typeof this.succeed === "function") {
-        this.fail.call(undefined, reason);
-      }
+      this.callbacks.forEach((handle) => {
+        if (typeof this.succeed === "function") {
+          handle[1].call(undefined, reason);
+        }
+      });
     }, 0);
   };
 
@@ -28,15 +32,17 @@ class Promise2 {
       throw new Error("我只接受函数");
     }
 
-    fn(this.resolve, this.reject);
+    fn(this.resolve.bind(this), this.reject.bind(this));
   }
   then(succeed, fail) {
+    const handle = [];
     if (typeof succeed === "function") {
-      this.succeed = succeed;
+      handle[0] = succeed;
     }
     if (typeof succeed === "function") {
-      this.fail = fail;
+      handle[1] = fail;
     }
+    this.callbacks.push(handle);
   }
 }
 
