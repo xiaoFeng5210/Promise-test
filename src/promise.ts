@@ -10,7 +10,8 @@ class Promise2 {
     setTimeout(() => {
       this.callbacks.forEach((handle) => {
         if (typeof this.succeed === "function") {
-          handle[0].call(undefined, result);
+          const resolve = handle[0].call(undefined, result);
+          handle[2].resolveWith(resolve);
         }
       });
     }, 0);
@@ -21,7 +22,8 @@ class Promise2 {
     setTimeout(() => {
       this.callbacks.forEach((handle) => {
         if (typeof this.succeed === "function") {
-          handle[1].call(undefined, reason);
+          const error = handle[1].call(undefined, reason);
+          handle[2].resolveWith(error);
         }
       });
     }, 0);
@@ -34,7 +36,7 @@ class Promise2 {
 
     fn(this.resolve.bind(this), this.reject.bind(this));
   }
-  then(succeed, fail) {
+  then(succeed?, fail?) {
     const handle = [];
     if (typeof succeed === "function") {
       handle[0] = succeed;
@@ -42,7 +44,20 @@ class Promise2 {
     if (typeof succeed === "function") {
       handle[1] = fail;
     }
+    handle[2] = new Promise2(() => {});
     this.callbacks.push(handle);
+    return handle[2];
+  }
+
+  resolveWith(x) {
+    if (x instanceof Promise2) {
+      x.then(
+        (result) => this.resolve(result),
+        (reason) => this.reject(reason)
+      );
+    }
+    if (x instanceof Object) {
+    }
   }
 }
 
